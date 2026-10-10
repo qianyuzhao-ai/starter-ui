@@ -1,0 +1,560 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Starter UI</title>
+<style>
+/* Layout: a sticky section nav on the left, one reading column on the right; the page is built with its own tokens */
+:root {
+  --bg: #ffffff; --surface: #f7f7f8; --surface-raised: #ffffff;
+  --border: #e4e4e7; --border-strong: #8a8a94;
+  --fg: #18181b; --fg-muted: #52525b; --fg-subtle: #6e6e78;
+  --primary: #2563eb; --primary-hover: #1d4ed8; --primary-fg: #ffffff; --primary-subtle: #eff4ff;
+  --success: #15803d; --warning: #b45309; --danger: #dc2626; --danger-hover: #b91c1c; --danger-fg: #ffffff;
+  --elevation-lg: 0 8px 24px rgb(0 0 0 / 0.12);
+  --code-bg: #f4f4f5;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121212; --surface: #1c1c1e; --surface-raised: #26262a;
+  --border: #2e2e33; --border-strong: #74747e;
+  --fg: #ececee; --fg-muted: #a1a1aa; --fg-subtle: #8e8e98;
+  --primary: #7aa7ff; --primary-hover: #9bbcff; --primary-fg: #0b1220; --primary-subtle: #1a2440;
+  --success: #4ade80; --warning: #fbbf24; --danger: #f87171; --danger-hover: #fca5a5; --danger-fg: #2a0a0a;
+  --elevation-lg: 0 8px 24px rgb(0 0 0 / 0.5);
+  --code-bg: #18181a;
+  color-scheme: dark;
+} }
+:root[data-theme="dark"] {
+  --bg: #121212; --surface: #1c1c1e; --surface-raised: #26262a;
+  --border: #2e2e33; --border-strong: #74747e;
+  --fg: #ececee; --fg-muted: #a1a1aa; --fg-subtle: #8e8e98;
+  --primary: #7aa7ff; --primary-hover: #9bbcff; --primary-fg: #0b1220; --primary-subtle: #1a2440;
+  --success: #4ade80; --warning: #fbbf24; --danger: #f87171; --danger-hover: #fca5a5; --danger-fg: #2a0a0a;
+  --elevation-lg: 0 8px 24px rgb(0 0 0 / 0.5);
+  --code-bg: #18181a;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font: 400 14px/22px var(--font-sans); }
+a { color: var(--primary); }
+:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+.shell { max-width: 1120px; margin: 0 auto; padding-inline: 24px; display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 48px; }
+nav.toc { position: sticky; top: env(safe-area-inset-top, 0px); align-self: start; padding-block: 48px; display: flex; flex-direction: column; gap: 4px; }
+nav.toc .brand { font-weight: 700; font-size: 16px; margin-bottom: 16px; letter-spacing: -0.01em; }
+nav.toc a { color: var(--fg-muted); text-decoration: none; padding: 4px 8px; border-radius: 8px; }
+nav.toc a:hover { background: var(--surface); color: var(--fg); }
+main { padding-block: 48px 96px; min-width: 0; display: flex; flex-direction: column; gap: 64px; }
+
+header.hero { display: flex; flex-direction: column; gap: 16px; padding-bottom: 32px; border-bottom: 1px solid var(--border); }
+.eyebrow { font-size: 12px; line-height: 18px; color: var(--fg-subtle); letter-spacing: .04em; }
+h1.title { margin: 0; font-size: 36px; line-height: 44px; font-weight: 700; letter-spacing: -0.02em; text-wrap: balance; }
+.lead { margin: 0; font-size: 16px; line-height: 26px; color: var(--fg-muted); max-width: 62ch; }
+.theme-switch { display: inline-flex; gap: 2px; padding: 2px; border: 1px solid var(--border); border-radius: 9999px; align-self: flex-start; }
+.theme-switch button { border: 0; background: transparent; color: var(--fg-muted); font: 500 13px/20px var(--font-sans); padding: 4px 12px; border-radius: 9999px; cursor: pointer; }
+.theme-switch button[aria-pressed="true"] { background: var(--surface); color: var(--fg); box-shadow: inset 0 0 0 1px var(--border); }
+
+section { display: flex; flex-direction: column; gap: 24px; scroll-margin-top: 24px; }
+h2 { margin: 0; font-size: 22px; line-height: 30px; font-weight: 600; text-wrap: balance; }
+h3 { margin: 0; font-size: 18px; line-height: 26px; font-weight: 600; }
+p { margin: 0; max-width: 66ch; }
+.muted { color: var(--fg-muted); }
+.sec-head { display: flex; flex-direction: column; gap: 8px; }
+
+.principles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.principle { display: flex; flex-direction: column; gap: 8px; padding: 16px; border: 1px solid var(--border); border-radius: 12px; }
+.principle b { font-weight: 600; font-size: 15px; }
+.principle p { color: var(--fg-muted); }
+
+.table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 10px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+tr:last-child td { border-bottom: 0; }
+th { font-size: 12px; line-height: 18px; font-weight: 500; color: var(--fg-subtle); background: var(--surface); white-space: nowrap; }
+td code, p code, li code { font: 400 12.5px/18px var(--font-mono); background: var(--code-bg); padding: 1px 6px; border-radius: 4px; white-space: nowrap; }
+.group-row td { background: var(--surface); font-size: 12px; font-weight: 600; color: var(--fg-muted); padding-block: 6px; }
+
+.sw { display: inline-flex; border-radius: 6px; overflow: hidden; box-shadow: inset 0 0 0 1px var(--border); vertical-align: middle; }
+.sw span { width: 28px; height: 28px; display: grid; place-items: center; font: 600 11px/1 var(--font-sans); }
+.hex { font: 400 12.5px/18px var(--font-mono); color: var(--fg-muted); white-space: nowrap; }
+.ratio { font: 500 12px/18px var(--font-sans); white-space: nowrap; }
+.ratio.ok { color: var(--success); }
+.ratio.na { color: var(--fg-subtle); }
+
+.type-list { display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: 12px; }
+.type-row { display: grid; grid-template-columns: 112px minmax(0, 1fr) 200px; gap: 16px; align-items: baseline; padding: 16px; border-bottom: 1px solid var(--border); }
+.type-row:last-child { border-bottom: 0; }
+.type-row .name code { font: 500 12.5px/18px var(--font-mono); color: var(--primary); }
+.type-row .meta { font-size: 12px; line-height: 18px; color: var(--fg-subtle); font-variant-numeric: tabular-nums; }
+.type-row .sample { min-width: 0; overflow-wrap: anywhere; }
+.type-row .use { font-size: 12px; line-height: 18px; color: var(--fg-muted); }
+
+ul.rules { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; max-width: 70ch; }
+ul.rules li::marker { color: var(--fg-subtle); }
+
+.scale { display: flex; flex-direction: column; gap: 10px; }
+.step { display: grid; grid-template-columns: 88px 48px minmax(0, 1fr); gap: 12px; align-items: center; }
+.step code { font: 400 12.5px/18px var(--font-mono); color: var(--fg-muted); }
+.step .px { font-size: 12px; color: var(--fg-subtle); font-variant-numeric: tabular-nums; }
+.bar { height: 12px; background: var(--primary); border-radius: 2px; opacity: .85; }
+.step .use { grid-column: 3; font-size: 12px; line-height: 18px; color: var(--fg-muted); margin-top: -6px; }
+.radii { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.radius { display: flex; flex-direction: column; gap: 8px; }
+.radius .box { height: 72px; border: 1.5px solid var(--border-strong); background: var(--surface); }
+.radius .box.pill { height: 40px; align-self: flex-start; width: 100%; }
+.radius code { font: 400 12.5px/18px var(--font-mono); }
+.radius span { font-size: 12px; line-height: 18px; color: var(--fg-muted); }
+.two-col { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 32px; }
+
+.comp { display: flex; flex-direction: column; gap: 16px; padding-top: 8px; }
+.comp + .comp { border-top: 1px solid var(--border); padding-top: 32px; }
+.stage { padding: 24px; border: 1px solid var(--border); border-radius: 12px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; background: var(--bg);
+  background-image: radial-gradient(var(--border) 1px, transparent 1px); background-size: 16px 16px; }
+.stage.col { flex-direction: column; align-items: stretch; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+details.code { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+details.code summary { cursor: pointer; padding: 10px 16px; font-weight: 500; color: var(--fg-muted); list-style: none; display: flex; justify-content: space-between; align-items: center; }
+details.code summary::-webkit-details-marker { display: none; }
+details.code summary::after { content: "展开"; font-size: 12px; color: var(--fg-subtle); }
+details.code[open] summary::after { content: "收起"; }
+details.code[open] summary { border-bottom: 1px solid var(--border); }
+.codeblock { position: relative; }
+pre { margin: 0; padding: 16px; overflow-x: auto; background: var(--code-bg); font: 400 12.5px/20px var(--font-mono); color: var(--fg); tab-size: 2; }
+.codeblock.standalone pre { border: 1px solid var(--border); border-radius: 12px; }
+.copy { position: absolute; top: 8px; right: 8px; }
+.notes { display: flex; flex-direction: column; gap: 6px; }
+
+/* Starter UI components (same as the Tailwind recipes) */
+.su-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 36px; padding: 0 16px; border-radius: 8px; border: 1px solid transparent; font: 500 14px/20px var(--font-sans); cursor: pointer; white-space: nowrap; transition: background-color .15s, border-color .15s; }
+.su-btn:disabled { opacity: .5; cursor: not-allowed; }
+.su-btn--sm { height: 32px; padding: 0 12px; }
+.su-btn--lg { height: 44px; padding: 0 24px; }
+.su-btn--xs { height: 28px; padding: 0 10px; font-size: 12px; }
+.su-btn--primary { background: var(--primary); color: var(--primary-fg); }
+.su-btn--primary:hover:not(:disabled) { background: var(--primary-hover); }
+.su-btn--secondary { background: var(--surface); color: var(--fg); border-color: var(--border-strong); }
+.su-btn--secondary:hover:not(:disabled) { background: var(--border); }
+.su-btn--ghost { background: transparent; color: var(--fg); }
+.su-btn--ghost:hover:not(:disabled) { background: var(--surface); }
+.su-btn--danger { background: var(--danger); color: var(--danger-fg); }
+.su-btn--danger:hover:not(:disabled) { background: var(--danger-hover); }
+.su-field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.su-label { font: 500 14px/20px var(--font-sans); color: var(--fg); }
+.su-input { height: 36px; width: 100%; padding: 0 12px; border-radius: 8px; border: 1px solid var(--border-strong); background: var(--bg); color: var(--fg); font: 400 14px/22px var(--font-sans); }
+.su-input::placeholder { color: var(--fg-subtle); }
+.su-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
+.su-input:disabled { opacity: .5; cursor: not-allowed; background: var(--surface); }
+.su-input[aria-invalid="true"] { border-color: var(--danger); }
+.su-help { font: 400 12px/18px var(--font-sans); color: var(--fg-subtle); }
+.su-help--error { color: var(--danger); }
+.fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; width: 100%; }
+.su-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; flex: 1 1 260px; min-width: 0; }
+.su-card--raised { background: var(--surface-raised); box-shadow: var(--elevation-lg); }
+.su-card h3 { font-size: 18px; line-height: 26px; }
+.su-card p { margin-top: 4px; color: var(--fg-muted); }
+.su-card .foot { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+.su-badge { display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 8px; border-radius: 4px; border: 1px solid var(--border); font: 500 12px/18px var(--font-sans); color: var(--fg-muted); background: var(--bg); }
+.su-badge i { width: 6px; height: 6px; border-radius: 9999px; }
+.su-badge--primary { background: var(--primary-subtle); border-color: transparent; color: var(--primary); }
+
+footer { color: var(--fg-subtle); font-size: 12px; border-top: 1px solid var(--border); padding-top: 16px; }
+
+@media (max-width: 860px) {
+  .shell { grid-template-columns: minmax(0, 1fr); gap: 0; padding-inline: 16px; }
+  nav.toc { position: static; flex-direction: row; flex-wrap: wrap; padding-block: 24px 0; }
+  nav.toc .brand { width: 100%; margin-bottom: 4px; }
+  main { padding-block: 24px 64px; gap: 48px; }
+  .principles, .fields { grid-template-columns: minmax(0, 1fr); }
+  .two-col { grid-template-columns: minmax(0, 1fr); }
+  .radii { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .type-row { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  h1.title { font-size: 28px; line-height: 36px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <nav class="toc" aria-label="目录">
+    <div class="brand">Starter UI</div>
+    <a href="#principles">原则</a>
+    <a href="#color">颜色</a>
+    <a href="#type">字体</a>
+    <a href="#space">间距与圆角</a>
+    <a href="#components">组件</a>
+    <a href="#tailwind">Tailwind 配置</a>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <div class="eyebrow">设计规范 · v1</div>
+      <h1 class="title">Starter UI</h1>
+      <p class="lead">实验项目的最小设计规范。颜色、字号、间距从第一天起统一成 token，并同时支持 Light 和 Dark。项目长大后换品牌色或调整字号，只改 token，不用全局搜索替换。</p>
+      <div class="theme-switch" role="group" aria-label="预览主题">
+        <button type="button" data-set="" aria-pressed="true">跟随系统</button>
+        <button type="button" data-set="light" aria-pressed="false">Light</button>
+        <button type="button" data-set="dark" aria-pressed="false">Dark</button>
+      </div>
+    </header>
+
+    <section id="principles">
+      <h2>三条原则</h2>
+      <div class="principles">
+        <div class="principle"><b>只用语义 token</b><p>写 <code>text-fg-muted</code>，不写 <code>text-zinc-600</code> 或色值。主题切换靠 token，组件里几乎不需要 <code>dark:</code>。</p></div>
+        <div class="principle"><b>少即是多</b><p>1 个品牌色、3 级文字色、9 个字号样式、8 档间距、4 档圆角。不够用时先复用，再新增。</p></div>
+        <div class="principle"><b>两个主题同时设计</b><p>每加一个颜色，Light 和 Dark 的值同时定，并在两种背景上各验一次对比度。</p></div>
+      </div>
+    </section>
+
+    <section id="color">
+      <div class="sec-head">
+        <h2>颜色</h2>
+        <p class="muted">每个色块左半是 Light 值，右半是 Dark 值。对比度按各自主题的 <code>bg</code> 计算，文字类 token 在 <code>bg</code>、<code>surface</code>、<code>surface-raised</code> 三层背景上都 ≥ 4.5:1。</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Token</th><th>色块</th><th>Light</th><th>Dark</th><th>对比度 L / D</th><th>用途</th></tr></thead>
+          <tbody id="color-rows"></tbody>
+        </table>
+      </div>
+      <ul class="rules">
+        <li>背景用 <code>#121212</code> 深灰，不用纯黑；主文字用 <code>#ececee</code>，不用纯白，避免光晕和疲劳。</li>
+        <li>彩色在深色下提亮、降饱和，所以放在彩色上的文字（<code>primary-fg</code>、<code>danger-fg</code>）在深色下反而变深。</li>
+        <li>深色下阴影几乎不可见，层级靠 <code>surface-raised</code> 变亮来表达。</li>
+        <li>状态色只表达状态，始终配合图标或文字，不只靠颜色。</li>
+      </ul>
+    </section>
+
+    <section id="type">
+      <div class="sec-head">
+        <h2>字体</h2>
+        <p class="muted">用系统字体栈，不加载 Web 字体，启动快、中文渲染稳定。字号 / 行高单位为 px。</p>
+      </div>
+      <div class="type-list" id="type-rows"></div>
+      <ul class="rules">
+        <li>Web 端默认正文用 <code>body</code>（14px），移动端默认用 <code>body-lg</code>（16px）。</li>
+        <li>字重只用 400 / 500 / 600 / 700。不用 300 以下的细体，深色下会发虚。</li>
+        <li>中文正文行高约为字号的 1.5–1.6 倍，标题收紧到 1.25–1.3。</li>
+        <li>一个页面最多 3 个字号层级，层次靠字重和 <code>fg</code> / <code>fg-muted</code> 拉开。</li>
+        <li>移动端输入框字号不小于 16px，否则 iOS Safari 聚焦时会放大页面。</li>
+      </ul>
+    </section>
+
+    <section id="space">
+      <h2>间距与圆角</h2>
+      <div class="two-col">
+        <div class="scale" id="space-rows"></div>
+        <div style="display:flex;flex-direction:column;gap:24px;min-width:0">
+          <div class="radii" id="radius-rows"></div>
+          <ul class="rules">
+            <li>组件内部 4–16，组件之间 16–32，区块之间 32–64。</li>
+            <li>页面边距：移动端 16，Web 端 24 起。</li>
+            <li>嵌套圆角：外层 = 内层 + 内边距。</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="components">
+      <div class="sec-head">
+        <h2>组件</h2>
+        <p class="muted">下面的组件都是可以直接交互的实时预览，切换上方主题即可对比。每个组件附 Tailwind 写法，项目里建议各封装成一个组件，用 props 切换变体。</p>
+      </div>
+
+      <div class="comp">
+        <h3>Button</h3>
+        <div class="stage col">
+          <div class="row">
+            <button class="su-btn su-btn--primary" type="button">发送邀请</button>
+            <button class="su-btn su-btn--secondary" type="button">取消</button>
+            <button class="su-btn su-btn--ghost" type="button">了解更多</button>
+            <button class="su-btn su-btn--danger" type="button">删除项目</button>
+          </div>
+          <div class="row">
+            <button class="su-btn su-btn--primary su-btn--sm" type="button">sm 32</button>
+            <button class="su-btn su-btn--primary" type="button">md 36</button>
+            <button class="su-btn su-btn--primary su-btn--lg" type="button">lg 44</button>
+            <button class="su-btn su-btn--primary" type="button" disabled>禁用</button>
+          </div>
+        </div>
+        <div class="notes">
+          <p><b>primary</b> 一屏只放一个；<b>secondary</b> 用于并列的次要操作；<b>ghost</b> 用于工具栏和行内；<b>danger</b> 用于不可逆操作，放在确认弹窗里。尺寸：<code>sm</code> 表格行内，<code>md</code> Web 默认，<code>lg</code> 移动端默认（44px 最小触控区域）。文案用动词开头，图标按钮必须加 <code>aria-label</code>。</p>
+        </div>
+        <details class="code"><summary>Tailwind 写法</summary><div class="codeblock"><pre><code>&lt;button class="inline-flex items-center justify-center gap-2 h-9 px-4 rounded-md
+  text-label font-medium transition-colors
+  focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary
+  disabled:opacity-50 disabled:cursor-not-allowed
+  bg-primary text-primary-fg hover:bg-primary-hover"&gt;发送邀请&lt;/button&gt;
+
+&lt;!-- 变体：替换最后一行 --&gt;
+primary    bg-primary text-primary-fg hover:bg-primary-hover
+secondary  bg-surface text-fg border border-border-strong hover:bg-border
+ghost      bg-transparent text-fg hover:bg-surface
+danger     bg-danger text-danger-fg hover:bg-danger-hover
+
+&lt;!-- 尺寸：sm → h-8 px-3，lg → h-11 px-6 --&gt;</code></pre><button class="su-btn su-btn--secondary su-btn--xs copy" type="button">复制</button></div></details>
+      </div>
+
+      <div class="comp">
+        <h3>Input</h3>
+        <div class="stage">
+          <div class="fields">
+            <div class="su-field">
+              <label class="su-label" for="in-name">项目名称</label>
+              <input class="su-input" id="in-name" placeholder="例如：landing-test">
+              <span class="su-help">只能包含小写字母和连字符</span>
+            </div>
+            <div class="su-field">
+              <label class="su-label" for="in-mail">邮箱</label>
+              <input class="su-input" id="in-mail" value="name@" aria-invalid="true" aria-describedby="in-mail-err">
+              <span class="su-help su-help--error" id="in-mail-err">请输入完整的邮箱地址</span>
+            </div>
+            <div class="su-field">
+              <label class="su-label" for="in-id">项目 ID</label>
+              <input class="su-input" id="in-id" value="prj_8f2a" disabled>
+              <span class="su-help">创建后不可修改</span>
+            </div>
+          </div>
+        </div>
+        <div class="notes">
+          <p>结构：标签 → 输入框 → 帮助文字或错误提示，间距 4px，表单项之间 24px。边框用 <code>border-strong</code>，保证输入框边界 ≥ 3:1。不要只用占位符代替标签。移动端改为 <code>h-11 text-body-lg</code>。错误提示写清楚怎么改。</p>
+        </div>
+        <details class="code"><summary>Tailwind 写法</summary><div class="codeblock"><pre><code>&lt;label class="flex flex-col gap-1"&gt;
+  &lt;span class="text-label font-medium text-fg"&gt;项目名称&lt;/span&gt;
+  &lt;input class="h-9 w-full px-3 rounded-md bg-bg text-body text-fg
+    border border-border-strong placeholder:text-fg-subtle
+    focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary
+    disabled:opacity-50 disabled:bg-surface
+    aria-[invalid=true]:border-danger"
+    placeholder="例如：landing-test"&gt;
+  &lt;span class="text-caption text-fg-subtle"&gt;只能包含小写字母和连字符&lt;/span&gt;
+&lt;/label&gt;
+
+&lt;!-- 错误：input 加 aria-invalid="true"，提示文字换成 text-danger --&gt;</code></pre><button class="su-btn su-btn--secondary su-btn--xs copy" type="button">复制</button></div></details>
+      </div>
+
+      <div class="comp">
+        <h3>Card</h3>
+        <div class="stage">
+          <div class="su-card">
+            <h3>邀请新成员</h3>
+            <p>成员可以查看和编辑这个项目，你随时可以移除他们。</p>
+            <div class="foot"><button class="su-btn su-btn--secondary" type="button">取消</button><button class="su-btn su-btn--primary" type="button">发送邀请</button></div>
+          </div>
+          <div class="su-card su-card--raised">
+            <h3>删除项目？</h3>
+            <p>项目里的所有数据会被永久删除，无法恢复。</p>
+            <div class="foot"><button class="su-btn su-btn--secondary" type="button">取消</button><button class="su-btn su-btn--danger" type="button">删除项目</button></div>
+          </div>
+        </div>
+        <div class="notes">
+          <p><b>默认</b>用 <code>surface</code> + <code>border</code>，用于页面内分组；<b>浮层</b>用 <code>surface-raised</code> + <code>shadow-lg</code>，用于弹窗和 Popover。内边距 16，内容多时 24。卡片不嵌套卡片，需要再分组用分割线。主操作放最右。</p>
+        </div>
+        <details class="code"><summary>Tailwind 写法</summary><div class="codeblock"><pre><code>&lt;div class="bg-surface border border-border rounded-lg p-4"&gt;
+  &lt;h3 class="text-h3 font-semibold text-fg"&gt;邀请新成员&lt;/h3&gt;
+  &lt;p class="text-body text-fg-muted mt-1"&gt;成员可以查看和编辑这个项目。&lt;/p&gt;
+  &lt;div class="flex justify-end gap-2 mt-4"&gt;
+    &lt;!-- secondary + primary 按钮 --&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- 浮层：bg-surface-raised border border-border rounded-lg p-4 shadow-lg --&gt;</code></pre><button class="su-btn su-btn--secondary su-btn--xs copy" type="button">复制</button></div></details>
+      </div>
+
+      <div class="comp">
+        <h3>Badge</h3>
+        <div class="stage">
+          <span class="su-badge">草稿</span>
+          <span class="su-badge su-badge--primary">新功能</span>
+          <span class="su-badge"><i style="background:var(--success)"></i>运行中</span>
+          <span class="su-badge"><i style="background:var(--warning)"></i>即将到期</span>
+          <span class="su-badge"><i style="background:var(--danger)"></i>构建失败</span>
+        </div>
+        <div class="notes">
+          <p>状态用"中性文字 + 彩色圆点"，而不是彩色字配同色浅底：后者在浅色模式下 12px 文字对比度只有约 4:1，达不到 AA；圆点方案文字始终清晰，色盲用户也能靠文字理解。文字 2–4 个字；Badge 不可点击，需要点击用 ghost 按钮。</p>
+        </div>
+        <details class="code"><summary>Tailwind 写法</summary><div class="codeblock"><pre><code>&lt;!-- 状态：圆点换成 bg-success / bg-warning / bg-danger，中性状态去掉圆点 --&gt;
+&lt;span class="inline-flex items-center gap-1 h-[22px] px-2 rounded-sm
+  border border-border text-caption font-medium text-fg-muted"&gt;
+  &lt;span class="size-1.5 rounded-full bg-success"&gt;&lt;/span&gt;运行中
+&lt;/span&gt;
+
+&lt;!-- 品牌：新功能、Beta --&gt;
+&lt;span class="inline-flex items-center h-[22px] px-2 rounded-sm
+  bg-primary-subtle text-primary text-caption font-medium"&gt;新功能&lt;/span&gt;</code></pre><button class="su-btn su-btn--secondary su-btn--xs copy" type="button">复制</button></div></details>
+      </div>
+    </section>
+
+    <section id="tailwind">
+      <div class="sec-head">
+        <h2>Tailwind v4 配置</h2>
+        <p class="muted">整段复制到 <code>app.css</code>。<code>--color-*: initial</code> 会清空 Tailwind 默认色板，强制只用语义色；觉得太严格可以删掉那一行。</p>
+      </div>
+      <div class="codeblock standalone"><pre id="tw-config"><code>@import "tailwindcss";
+@custom-variant dark (&amp;:where(.dark, .dark *));
+
+:root {
+  color-scheme: light;
+  --bg: #ffffff;           --surface: #f7f7f8;      --surface-raised: #ffffff;
+  --border: #e4e4e7;       --border-strong: #8a8a94;
+  --fg: #18181b;           --fg-muted: #52525b;     --fg-subtle: #6e6e78;
+  --primary: #2563eb;      --primary-hover: #1d4ed8;
+  --primary-fg: #ffffff;   --primary-subtle: #eff4ff;
+  --success: #15803d;      --warning: #b45309;      --danger: #dc2626;
+  --danger-hover: #b91c1c; --danger-fg: #ffffff;
+  --elevation-lg: 0 8px 24px rgb(0 0 0 / 0.12);
+}
+.dark {
+  color-scheme: dark;
+  --bg: #121212;           --surface: #1c1c1e;      --surface-raised: #26262a;
+  --border: #2e2e33;       --border-strong: #74747e;
+  --fg: #ececee;           --fg-muted: #a1a1aa;     --fg-subtle: #8e8e98;
+  --primary: #7aa7ff;      --primary-hover: #9bbcff;
+  --primary-fg: #0b1220;   --primary-subtle: #1a2440;
+  --success: #4ade80;      --warning: #fbbf24;      --danger: #f87171;
+  --danger-hover: #fca5a5; --danger-fg: #2a0a0a;
+  --elevation-lg: 0 8px 24px rgb(0 0 0 / 0.5);
+}
+
+@theme inline {
+  --color-*: initial; /* 清空默认色板，强制只用语义色 */
+  --color-white: #fff; --color-black: #000; --color-transparent: transparent;
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-subtle: var(--fg-subtle);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-fg: var(--primary-fg);
+  --color-primary-subtle: var(--primary-subtle);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-danger-hover: var(--danger-hover);
+  --color-danger-fg: var(--danger-fg);
+  --shadow-lg: var(--elevation-lg); /* 换个名字，避免自引用 */
+}
+
+@theme {
+  --spacing: 4px; /* p-1=4px p-4=16px p-6=24px */
+  --radius-sm: 4px; --radius-md: 8px; --radius-lg: 12px;
+
+  --text-display: 36px; --text-display--line-height: 44px;
+  --text-h1: 28px;      --text-h1--line-height: 36px;
+  --text-h2: 22px;      --text-h2--line-height: 30px;
+  --text-h3: 18px;      --text-h3--line-height: 26px;
+  --text-body-lg: 16px; --text-body-lg--line-height: 26px;
+  --text-body: 14px;    --text-body--line-height: 22px;
+  --text-label: 14px;   --text-label--line-height: 20px;
+  --text-caption: 12px; --text-caption--line-height: 18px;
+  --text-code: 13px;    --text-code--line-height: 20px;
+}
+
+body { @apply bg-bg text-fg text-body; }</code></pre><button class="su-btn su-btn--secondary su-btn--xs copy" type="button">复制</button></div>
+      <h3>主题切换脚本</h3>
+      <p class="muted">放在 <code>&lt;head&gt;</code> 里，先于页面渲染执行，避免闪白。</p>
+      <div class="codeblock standalone"><pre><code>&lt;script&gt;
+  const t = localStorage.getItem('theme');
+  const dark = t ? t === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  document.documentElement.classList.toggle('dark', dark);
+&lt;/script&gt;</code></pre><button class="su-btn su-btn--secondary su-btn--xs copy" type="button">复制</button></div>
+      <ul class="rules">
+        <li>新增颜色或字号时，先加进本规范，再在代码里用。宁可多一个 token，也不要在组件里写一个孤立的色值。</li>
+      </ul>
+    </section>
+
+    <footer>Starter UI v1 · 15+2 个颜色 token · 9 个字号样式 · 8 档间距 · 4 档圆角 · 4 个基础组件</footer>
+  </main>
+</div>
+
+<script>
+(() => {
+  const C = [
+    ['背景'],
+    ['bg', '#ffffff', '#121212', '页面底色', false],
+    ['surface', '#f7f7f8', '#1c1c1e', '卡片、侧边栏、分组区域', false],
+    ['surface-raised', '#ffffff', '#26262a', '弹窗、下拉菜单、浮层', false],
+    ['边框'],
+    ['border', '#e4e4e7', '#2e2e33', '分割线、卡片描边（装饰性）', false],
+    ['border-strong', '#8a8a94', '#74747e', '输入框、复选框等控件边框（≥3:1）', true],
+    ['文字'],
+    ['fg', '#18181b', '#ececee', '标题、正文', true],
+    ['fg-muted', '#52525b', '#a1a1aa', '描述、副标题、表头', true],
+    ['fg-subtle', '#6e6e78', '#8e8e98', '时间戳、占位符、caption', true],
+    ['品牌'],
+    ['primary', '#2563eb', '#7aa7ff', '主按钮、链接、焦点环、选中态', true],
+    ['primary-hover', '#1d4ed8', '#9bbcff', 'primary 的 hover / pressed', true],
+    ['primary-fg', '#ffffff', '#0b1220', 'primary 底色上的文字', 'on:primary'],
+    ['primary-subtle', '#eff4ff', '#1a2440', '选中行、轻量提示底色', false],
+    ['状态'],
+    ['success', '#15803d', '#4ade80', '成功', true],
+    ['warning', '#b45309', '#fbbf24', '警告', true],
+    ['danger', '#dc2626', '#f87171', '错误、删除', true],
+    ['danger-hover', '#b91c1c', '#fca5a5', 'danger 的 hover / pressed', true],
+    ['danger-fg', '#ffffff', '#2a0a0a', 'danger 底色上的文字', 'on:danger'],
+  ];
+  const lum = h => { const v = [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16) / 255).map(c => c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4); return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2]; };
+  const cr = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+  const find = n => C.find(r => r[0] === n);
+  const fmt = (v, min) => `<span class="ratio ${v >= min ? 'ok' : ''}">${v.toFixed(1)}</span>`;
+  let html = '';
+  for (const r of C) {
+    if (r.length === 1) { html += `<tr class="group-row"><td colspan="6">${r[0]}</td></tr>`; continue; }
+    const [n, l, d, use, chk] = r;
+    let ratio = '<span class="ratio na">—</span>';
+    if (chk === true) { const min = n === 'border-strong' ? 3 : 4.5; ratio = fmt(cr(l, '#ffffff'), min) + ' / ' + fmt(cr(d, '#121212'), min); }
+    else if (typeof chk === 'string') { const base = find(chk.slice(3)); ratio = fmt(cr(l, base[1]), 4.5) + ' / ' + fmt(cr(d, base[2]), 4.5) + ` <span class="ratio na">on ${base[0]}</span>`; }
+    html += `<tr><td><code>${n}</code></td><td><span class="sw"><span style="background:${l}"></span><span style="background:${d}"></span></span></td><td class="hex">${l}</td><td class="hex">${d}</td><td>${ratio}</td><td>${use}</td></tr>`;
+  }
+  document.getElementById('color-rows').innerHTML = html;
+
+  const T = [
+    ['display', 36, 44, 700, '-0.02em', '实验项目首页', '落地页、空状态大标题，一页最多一个'],
+    ['h1', 28, 36, 600, '-0.01em', '项目设置', '页面标题'],
+    ['h2', 22, 30, 600, '0', '成员与权限', '页面内区块标题'],
+    ['h3', 18, 26, 600, '0', '邀请新成员', '卡片、弹窗标题'],
+    ['body-lg', 16, 26, 400, '0', '长段落阅读时用更大的字号和行高，移动端正文默认用它。', '长文；移动端默认正文'],
+    ['body', 14, 22, 400, '0', '这是默认正文，用于大部分界面文字、表单和表格。', 'Web 端默认正文'],
+    ['label', 14, 20, 500, '0', '保存更改', '按钮、Tab、表单标签（单行）'],
+    ['caption', 12, 18, 400, '0', '3 分钟前更新', '时间戳、辅助说明，不用于段落'],
+    ['code', 13, 20, 400, '0', 'npm run dev', '代码、ID、数值（等宽）'],
+  ];
+  document.getElementById('type-rows').innerHTML = T.map(([n, s, lh, w, ls, sample, use]) =>
+    `<div class="type-row"><div class="name"><code>${n}</code><div class="meta">${s} / ${lh} · ${w}</div></div>` +
+    `<div class="sample" style="font-size:${s}px;line-height:${lh}px;font-weight:${w};letter-spacing:${ls};${n === 'code' ? 'font-family:var(--font-mono)' : ''}">${sample}</div>` +
+    `<div class="use">${use}</div></div>`).join('');
+
+  const S = [[1, 4, '图标与文字'], [2, 8, '紧凑元素之间'], [3, 12, '表单项内部、列表项之间'], [4, 16, '卡片内边距、移动端页边距'], [6, 24, '卡片之间、Web 端页边距'], [8, 32, '页面内区块之间'], [12, 48, '大区块分隔'], [16, 64, '落地页 section 之间']];
+  document.getElementById('space-rows').innerHTML = S.map(([k, px, use]) =>
+    `<div class="step"><code>space-${k}</code><span class="px">${px}px</span><div class="bar" style="width:${px * 3}px;max-width:100%"></div><div class="use">${use}</div></div>`).join('');
+
+  const R = [['radius-sm', 4, 'Badge、复选框'], ['radius-md', 8, '按钮、输入框'], ['radius-lg', 12, '卡片、弹窗'], ['radius-full', 9999, '头像、开关']];
+  document.getElementById('radius-rows').innerHTML = R.map(([n, v, use]) =>
+    `<div class="radius"><div class="box ${v > 100 ? 'pill' : ''}" style="border-radius:${v}px"></div><code>${n}</code><span>${v > 100 ? '9999' : v}px · ${use}</span></div>`).join('');
+
+  const root = document.documentElement;
+  const btns = document.querySelectorAll('.theme-switch button');
+  const apply = v => { if (v) root.setAttribute('data-theme', v); else root.removeAttribute('data-theme'); btns.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.set === v))); };
+  btns.forEach(b => b.addEventListener('click', () => { apply(b.dataset.set); try { localStorage.setItem('su-theme', b.dataset.set); } catch (e) {} }));
+  try { const s = localStorage.getItem('su-theme'); if (s) apply(s); } catch (e) {}
+
+  document.querySelectorAll('.copy').forEach(btn => btn.addEventListener('click', () => {
+    const pre = btn.parentElement.querySelector('pre');
+    const done = t => { btn.textContent = t; setTimeout(() => { btn.textContent = '复制'; }, 1500); };
+    const select = () => { const r = document.createRange(); r.selectNodeContents(pre); const s = getSelection(); s.removeAllRanges(); s.addRange(r); done('已选中，按 ⌘C'); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(pre.innerText).then(() => done('已复制'), select);
+    else select();
+  }));
+})();
+</script>
+</body>
+</html>
